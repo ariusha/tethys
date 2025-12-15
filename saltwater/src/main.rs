@@ -18,15 +18,14 @@ pub mod page;
 pub mod panic;
 pub mod port;
 pub mod proc;
-pub mod qemu;
 pub mod sstacks;
 pub mod scheduler;
 use crate::hcf::hcf;
 const INITIALISERS: [fn(&mut bootloader_api::BootInfo); 8] = [
     mapping::initialise,
+    frame::initialise,
     allocator::bootstrap_initialise,
     acpi::bootstrap_initialise,
-    frame::initialise,
     istacks::initialise,
     core::initialise,
     idt::initialise,
@@ -54,7 +53,6 @@ pub fn main(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     );
     // scheduler::enter();
     println!("successfully executed tethys operating system!");
-    qemu::exit(qemu::ExitCode::Success);
     println!("exited qemu with success code...");
     match &mut boot_info.framebuffer {
         bootloader_api::info::Optional::Some(framebuffer) => framebuffer

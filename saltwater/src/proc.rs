@@ -14,17 +14,17 @@ use x86_64::
         paging::{FrameAllocator, PageTable, PhysFrame}
     
 ;
-enum MessageStatus {
+pub enum MessageStatus {
     Sent(Vec<PhysFrame>),
     Received,
     Responded(Vec<PhysFrame>),
 }
-struct Message {
+pub struct Message {
     tag: u64,
     status: RwSpinlock<MessageStatus>,
     waiting: RwSpinlock<Vec<Arc<RwSpinlock<Thread>>>>,
 }
-struct State {
+pub struct State {
     walk: bool,
     rename: bool,
     make: bool,
@@ -40,27 +40,27 @@ struct State {
     tell: bool,
     lock: bool,
 }
-struct Binding {
+pub struct Binding {
     from_server: Weak<Server>,
     from_path: Box<[u8]>,
     to_path: Box<[u8]>,
     state_mask: State,
 }
-struct Server {
+pub struct Server {
     bindings: RwSpinlock<Vec<Binding>>,
     kind: ServerKind,
 }
-enum ServerKind {
+pub enum ServerKind {
     User(Arc<RwSpinlock<UserServer>>),
     Kernel(KernelServer),
 }
-struct UserServer {
+pub struct UserServer {
     priority_sum: RwSpinlock<u64>,
     requests: RwSpinlock<VecDeque<Arc<Message>>>,
     working: RwSpinlock<Vec<Arc<Message>>>,
     waiting: RwSpinlock<Vec<Arc<RwSpinlock<Thread>>>>,
 }
-struct KernelServer {}
+pub struct KernelServer {}
 pub struct Descriptor {
     server: Weak<Server>,
     path: Box<[u8]>,
