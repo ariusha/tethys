@@ -1,60 +1,5 @@
+use alloc::{string::String, vec::Vec};
 use crate::state::State;
-
-pub enum MessageTag {
-    RequestState = 0,
-    ResponseState = 1,
-    RequestDrop = 2,
-    ResponseDrop = 3,
-    RequestWalk = 4,
-    ResponseWalk = 5,
-    RequestList = 6,
-    ResponseList = 7,
-    RequestListPeek = 8,
-    ResponseListPeek = 9,
-    RequestListSeekForward = 10,
-    ResponseListSeekForward = 11,
-    RequestListSeekBackward = 12,
-    ResponseListSeekBackward = 13,
-    RequestListSeekStart = 14,
-    ResponseListSeekStart = 15,
-    RequestListSeekEnd = 16,
-    ResponseListSeekEnd = 17,
-    RequestListTell = 18,
-    ResponseListTell = 19,
-    RequestMake = 20,
-    ResponseMake = 21,
-    RequestRemove = 22,
-    ResponseRemove = 23,
-    RequestRename = 24,
-    ResponseRename = 25,
-    RequestRead = 26,
-    ResponseRead = 27,
-    RequestPeek = 28,
-    ResponsePeek = 29,
-    RequestInsert = 30,
-    ResponseInsert = 31,
-    RequestOverwriteForward = 32,
-    ResponseOverwriteForward = 33,
-    RequestOverwriteBackward = 34,
-    ResponseOverwriteBackward = 35,
-    RequestTruncateForward = 36,
-    ResponseTruncateForward = 37,
-    RequestTruncateBackward = 38,
-    ResponseTruncateBackward = 39,
-    RequestSeekForward = 40,
-    ResponseSeekForward = 41,
-    RequestSeekBackward = 42,
-    ResponseSeekBackward = 43,
-    RequestSeekStart = 44,
-    ResponseSeekStart = 45,
-    RequestSeekEnd = 46,
-    ResponseSeekEnd = 47,
-    RequestBindBefore = 48,
-    ResponseBindBefore = 49,
-    RequestBindAfter = 50,
-    ResponseBindAfter = 51,
-    ResponseFailure = u64::MAX,
-}
 pub struct MessageRequestState {
     descriptor: u64,
 }
@@ -86,52 +31,213 @@ pub struct MessageRequestListPeek {
     count: u64,
 }
 pub struct MessageResponseListPeek {
-    descriptor: u64,
-    count: u64,
+    names: Vec<String>,
 }
 pub struct MessageRequestListSeekForward {
-
+    descriptor: u64,
+    offset: u64,
 }
-pub struct MessageResponseListSeekForward {}
-pub struct MessageRequestListSeekBackward {}
-pub struct MessageResponseListSeekBackward {}
-pub struct MessageRequestListSeekStart {}
-pub struct MessageResponseListSeekStart {}
-pub struct MessageRequestListSeekEnd {}
-pub struct MessageResponseListSeekEnd {}
-pub struct MessageRequestListTell {}
-pub struct MessageResponseListTell {}
-pub struct MessageRequestMake {}
-pub struct MessageResponseMake {}
-pub struct MessageRequestRemove {}
-pub struct MessageResponseRemove {}
-pub struct MessageRequestRename {}
-pub struct MessageResponseRename {}
-pub struct MessageRequestRead {}
-pub struct MessageResponseRead {}
-pub struct MessageRequestPeek {}
-pub struct MessageResponsePeek {}
-pub struct MessageRequestInsert {}
-pub struct MessageResponseInsert {}
-pub struct MessageRequestOverwriteForward {}
-pub struct MessageResponseOverwriteForward {}
-pub struct MessageRequestOverwriteBackward {}
-pub struct MessageResponseOverwriteBackward {}
-pub struct MessageRequestTruncateForward {}
-pub struct MessageResponseTruncateForward {}
-pub struct MessageRequestTruncateBackward {}
-pub struct MessageResponseTruncateBackward {}
-pub struct MessageRequestSeekForward {}
-pub struct MessageResponseSeekForward {}
-pub struct MessageRequestSeekBackward {}
-pub struct MessageResponseSeekBackward {}
-pub struct MessageRequestSeekStart {}
-pub struct MessageResponseSeekStart {}
-pub struct MessageRequestSeekEnd {}
-pub struct MessageResponseSeekEnd {}
-pub struct MessageRequestBindBefore {}
-pub struct MessageResponseBindBefore {}
-pub struct MessageRequestBindAfter {}
-pub struct MessageResponseBindAfter {}
+pub struct MessageResponseListSeekForward {
+    offset: u64,
+}
+pub struct MessageRequestListSeekBackward {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseListSeekBackward {
+    offset: u64,
+}
+pub struct MessageRequestListSeekStart {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseListSeekStart {
+    offset: u64,
+}
+pub struct MessageRequestListSeekEnd {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseListSeekEnd {
+    offset: u64,
+}
+pub struct MessageRequestListTell {
+    descriptor: u64,
+}
+pub struct MessageResponseListTell {
+    offset: u64,
+}
+pub struct MessageRequestMake {
+    descriptor: u64,
+    name: String,
+    mask: State,
+}
+pub struct MessageResponseMake {
+    descriptor: u64,
+}
+pub struct MessageRequestRemove {
+    descriptor: u64,
+    name: String,
+}
+pub struct MessageResponseRemove {
+}
+pub struct MessageRequestRename {
+    descriptor: u64,
+    from: String,
+    to: String,
+}
+pub struct MessageResponseRename {
+}
+pub struct MessageRequestRead {
+    descriptor: u64,
+    length: u64,
+}
+pub struct MessageResponseRead {
+    content: Vec<u8>,
+}
+pub struct MessageRequestPeek {
+    descriptor: u64,
+    length: u64,
+}
+pub struct MessageResponsePeek {
+    content: Vec<u8>,
+}
+pub struct MessageRequestInsert {
+    descriptor: u64,
+    content: Vec<u8>,
+}
+pub struct MessageResponseInsert {
+    length: u64,
+}
+pub struct MessageRequestOverwriteForward {
+    descriptor: u64,
+    content: Vec<u8>,
+}
+pub struct MessageResponseOverwriteForward {
+    length: u64,
+}
+pub struct MessageRequestOverwriteBackward {
+    descriptor: u64,
+    content: Vec<u8>,
+}
+pub struct MessageResponseOverwriteBackward {
+    length: u64,
+}
+pub struct MessageRequestTruncateForward {
+    descriptor: u64,
+    length: u64,
+}
+pub struct MessageResponseTruncateForward {
+    length: u64,
+}
+pub struct MessageRequestTruncateBackward {
+    descriptor: u64,
+    length: u64,
+}
+pub struct MessageResponseTruncateBackward {
+    length: u64,
+}
+pub struct MessageRequestSeekForward {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseSeekForward {
+    offset: u64,
+}
+pub struct MessageRequestSeekBackward {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseSeekBackward {
+    offset: u64,
+}
+pub struct MessageRequestSeekStart {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseSeekStart {
+    offset: u64,
+}
+pub struct MessageRequestSeekEnd {
+    descriptor: u64,
+    offset: u64,
+}
+pub struct MessageResponseSeekEnd {
+    offset: u64,
+}
+pub struct MessageRequestBindBefore {
+    to_descriptor: u64,
+    to_path: u64,
+    from_descriptor: u64,
+    mask: State,
+}
+pub struct MessageResponseBindBefore {
+}
+pub struct MessageRequestBindAfter {
+    to_descriptor: u64,
+    to_path: u64,
+    from_descriptor: u64,
+    mask: State,
+}
+pub struct MessageResponseBindAfter {
+}
+pub struct MessageResponseFailure {
+}
 pub enum Message {
+    RequestState(MessageRequestState),
+    ResponseState(MessageResponseState),
+    RequestDrop(MessageRequestDrop),
+    ResponseDrop(MessageResponseDrop),
+    RequestWalk(MessageRequestWalk),
+    ResponseWalk(MessageResponseWalk),
+    RequestList(MessageRequestList),
+    ResponseList(MessageResponseList),
+    RequestListPeek(MessageRequestListPeek),
+    ResponseListPeek(MessageResponseListPeek),
+    RequestListSeekForward(MessageRequestListSeekForward),
+    ResponseListSeekForward(MessageResponseListSeekForward),
+    RequestListSeekBackward(MessageRequestListSeekBackward),
+    ResponseListSeekBackward(MessageResponseListSeekBackward),
+    RequestListSeekStart(MessageRequestListSeekStart),
+    ResponseListSeekStart(MessageResponseListSeekStart),
+    RequestListSeekEnd(MessageRequestListSeekEnd),
+    ResponseListSeekEnd(MessageResponseListSeekEnd),
+    RequestListTell(MessageRequestListTell),
+    ResponseListTell(MessageResponseListTell),
+    RequestMake(MessageRequestMake),
+    ResponseMake(MessageResponseMake),
+    RequestRemove(MessageRequestRemove),
+    ResponseRemove(MessageResponseRemove),
+    RequestRename(MessageRequestRename),
+    ResponseRename(MessageResponseRename),
+    RequestRead(MessageRequestRead),
+    ResponseRead(MessageResponseRead),
+    RequestPeek(MessageRequestPeek),
+    ResponsePeek(MessageResponsePeek),
+    RequestInsert(MessageRequestInsert),
+    ResponseInsert(MessageResponseInsert),
+    RequestOverwriteForward(MessageRequestOverwriteForward),
+    ResponseOverwriteForward(MessageResponseOverwriteForward),
+    RequestOverwriteBackward(MessageRequestOverwriteBackward),
+    ResponseOverwriteBackward(MessageResponseOverwriteBackward),
+    RequestTruncateForward(MessageRequestTruncateForward),
+    ResponseTruncateForward(MessageResponseTruncateForward),
+    RequestTruncateBackward(MessageRequestTruncateBackward),
+    ResponseTruncateBackward(MessageResponseTruncateBackward),
+    RequestSeekForward(MessageRequestSeekForward),
+    ResponseSeekForward(MessageResponseSeekForward),
+    RequestSeekBackward(MessageRequestSeekBackward),
+    ResponseSeekBackward(MessageResponseSeekBackward),
+    RequestSeekStart(MessageRequestSeekStart),
+    ResponseSeekStart(MessageResponseSeekStart),
+    RequestSeekEnd(MessageRequestSeekEnd),
+    ResponseSeekEnd(MessageResponseSeekEnd),
+    RequestBindBefore(MessageRequestBindBefore),
+    ResponseBindBefore(MessageResponseBindBefore),
+    RequestBindAfter(MessageRequestBindAfter),
+    ResponseBindAfter(MessageResponseBindAfter),
+    ResponseFailure(MessageResponseFailure),
+}
+pub enum MessageRequestor {
+
 }
