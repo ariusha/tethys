@@ -1,0 +1,1 @@
+gcc -static -nostdlib kickstart/kickstart.S -o kickstart.x86_64

@@ -1,14 +1,17 @@
 [package]
 name = "tethys"
-version = "0.1.0"
+version = "5.0.0"
 edition = "2024"
 
 [dependencies]
-ovmf-prebuilt = "0.1.0-alpha.1"
 
-[build-dependencies]
-bootloader = "0.11.12"
-saltwater = { path = "saltwater", artifact = "bin", target = "x86_64-unknown-none" }
+[dependencies.elf]
+version = "0.8.0"
+default-features = false
+features = ["alloc", "to_str"]
+
+[dependencies.ostd]
+version = "0.17.0"
 
 [workspace]
-members = ["kickstart","saltwater", "simple_tree_filesystem", "tethys_lib"]
+exclude = ["target/osdk/base", "target/osdk/test-base"]

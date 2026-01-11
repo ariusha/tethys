@@ -25,24 +25,22 @@ solidify syscall interface
 system stacks
 implement userspace-kernelspace separation for preemption in proc.rs
 managed page tables for processes
+change interface to accept an array of u64s, and return an array of options of u64s, and handle abort / map / unmap / switch within memory.rs
 // complete ^^
 // to do \/ \/
-thread-local storage
+add type checks for message verification, exchanger state, copied -> sender verified -> sender inspected -> responder verified -> responder inspected message state
+add proper inspection
+limit architecture to task.rs
 kickstart process elf loader
 boilerplate kickstart process
-switch into process
+task initialisation
 syscall testing
-catch out of process
-apic commands
-single core round-robin scheduler
-modify managed page tables for multicore tlb shootdowns
-syscall stack deallocation
-solidify tethys filesystem interface
+bucket cascade eevdf scheduler
 rewrite ABI.md
 traversal of filesystems in a tree by string
-create system-owned filesystem interface
-system-owned x86_64 port i/o filesystem
-userspace debugcon server
+kernel tasks & servers
+kernel server for x86_64 ports
+kernel ostd println server
 userspace hello world program
 system-owned process server
 set of default mounts into kickstart namespace
