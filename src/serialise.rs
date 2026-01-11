@@ -1,3 +1,5 @@
+#[repr(u64)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum MessageTag {
     RequestState = 0,
     ResponseState = 1,
