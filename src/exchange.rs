@@ -47,28 +47,28 @@ pub trait ValidResponse<Request> {
 pub trait ValidRequest<Response> {
     fn len(self: &Self) -> u64;
 }
-pub struct RequestorTyped<
+pub struct RequestorInjected<
     Request: ValidRequest<Response>,
     Response: ValidResponse<Request>,
-    RequestorExtra: FnOnce(Response) -> Result<Response, RequestorAcceptError>,
->(Arc<RequestorInner<Request, Response>>, Box<RequestorExtra>);
-pub struct ResponderTyped<
+    Injection: FnOnce(Response) -> Result<Response, RequestorAcceptError>,
+>(Arc<RequestorInner<Request, Response>>, Box<Injection>);
+pub struct ResponderInjected<
     Request: ValidRequest<Response>,
     Response: ValidResponse<Request>,
-    ResponderExtra: FnOnce(Response) -> Result<Response, ResponderRespondError>,
->(Arc<ResponderInner<Request, Response>>, Box<ResponderExtra>);
+    Injection: FnOnce(Response) -> Result<Response, ResponderRespondError>,
+>(Arc<ResponderInner<Request, Response>>, Box<Injection>);
 pub fn exchange<
     Request: ValidRequest<Response>,
     Response: ValidResponse<Request>,
-    RequestorExtra: FnOnce(Response) -> Result<Response, RequestorAcceptError>,
-    ResponderExtra: FnOnce(Response) -> Result<Response, ResponderRespondError>,
+    RequestorInjection: FnOnce(Response) -> Result<Response, RequestorAcceptError>,
+    ResponderInjection: FnOnce(Response) -> Result<Response, ResponderRespondError>,
 >(
     request: Request,
-    requestor_extra: RequestorExtra,
-    responder_extra: ResponderExtra,
+    requestor_injection: RequestorInjection,
+    responder_injection: ResponderInjection,
 ) -> (
-    RequestorTyped<Request, Response, RequestorExtra>,
-    ResponderTyped<Request, Response, ResponderExtra>,
+    RequestorInjected<Request, Response, RequestorInjection>,
+    ResponderInjected<Request, Response, ResponderInjection>,
 ) {
     let mut requestor = UniqueArc::new(RequestorInner {
         responder: Weak::new(),
@@ -83,8 +83,8 @@ pub fn exchange<
     });
     requestor.responder = Arc::downgrade(&responder);
     (
-        RequestorTyped(UniqueArc::into_arc(requestor), Box::new(requestor_extra)),
-        ResponderTyped(responder, Box::new(responder_extra)),
+        RequestorInjected(UniqueArc::into_arc(requestor), Box::new(requestor_injection)),
+        ResponderInjected(responder, Box::new(responder_injection)),
     )
 }
 impl<Request: ValidRequest<Response>, Response: ValidResponse<Request>> Drop
@@ -100,8 +100,8 @@ impl<Request: ValidRequest<Response>, Response: ValidResponse<Request>> Drop
 impl<
     Request: ValidRequest<Response>,
     Response: ValidResponse<Request>,
-    RequestorExtra: FnOnce(Response) -> Result<Response, RequestorAcceptError>,
-> RequestorTyped<Request, Response, RequestorExtra>
+    RequestorInjection: FnOnce(Response) -> Result<Response, RequestorAcceptError>,
+> RequestorInjected<Request, Response, RequestorInjection>
 {
     pub fn forget(self: Self) {
         self.0
@@ -155,8 +155,7 @@ impl<
         };
         match self.0.response.write().take() {
             Some(response) => {
-                let Self(_, extra) = self;
-                extra(response)
+                self.1(response)
             }
             None => Err(RequestorAcceptError::Dropped),
         }
@@ -165,8 +164,8 @@ impl<
 impl<
     Request: ValidRequest<Response>,
     Response: ValidResponse<Request>,
-    ResponderExtra: FnOnce(Response) -> Result<Response, ResponderRespondError>,
-> ResponderTyped<Request, Response, ResponderExtra>
+    ResponderInjection: FnOnce(Response) -> Result<Response, ResponderRespondError>,
+> ResponderInjected<Request, Response, ResponderInjection>
 {
     pub fn query(self: &Self) -> Result<u64, ResponderQueryError> {
         let inner_length_result = match &*self.0.request.read() {
