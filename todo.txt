@@ -27,9 +27,11 @@ implement userspace-kernelspace separation for preemption in proc.rs
 managed page tables for processes
 change interface to accept an array of u64s, and return an array of options of u64s, and handle abort / map / unmap / switch within memory.rs
 add type checks for message verification, exchanger state, copied -> sender verified -> sender inspected -> responder verified -> responder inspected message state
+move from deserialising and reserialising every message to zero-copy (abi allows for it; originally attempted but deemed too messy for first try at osdev)
 // complete ^^
 // to do \/ \/
-move from deserialising and reserialising every message to zero-copy (abi allows for it; originally attempted but deemed too messy for first try at osdev)
+implement inspection and injection for message types
+create requester/responder enums for message types (use macros to merge them?)
 limit architecture-dependency to task.rs
 kickstart process elf loader
 boilerplate kickstart process
@@ -39,6 +41,7 @@ bucket cascade eevdf scheduler
 rewrite ABI.md
 traversal of filesystems in a tree by string
 kernel tasks & servers
+add back x86_64 crate for x86_64 port i/o
 kernel server for x86_64 ports
 kernel ostd println server
 userspace hello world program
