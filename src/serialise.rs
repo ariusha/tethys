@@ -1,8 +1,36 @@
+use crate::{
+    message::{
+        MessageRequestDrop, MessageRequestList, MessageRequestListPeek,
+        MessageRequestListSeekBackward, MessageRequestListSeekEnd, MessageRequestListSeekForward,
+        MessageRequestListSeekStart, MessageRequestListTell, MessageRequestMake,
+        MessageRequestRemove, MessageRequestState, MessageRequestWalk, MessageResponseDrop,
+        MessageResponseList, MessageResponseListPeek, MessageResponseListSeekBackward,
+        MessageResponseListSeekEnd, MessageResponseListSeekForward, MessageResponseListSeekStart,
+        MessageResponseListTell, MessageResponseMake, MessageResponseRemove, MessageResponseState,
+        MessageResponseWalk,
+    },
+    state::State,
+};
 use alloc::vec::Vec;
-use crate::{message::{MessageRequestDrop, MessageRequestList, MessageRequestListPeek, MessageRequestListSeekBackward, MessageRequestListSeekEnd, MessageRequestListSeekForward, MessageRequestListSeekStart, MessageRequestListTell, MessageRequestMake, MessageRequestRemove, MessageRequestState, MessageRequestWalk, MessageResponseDrop, MessageResponseList, MessageResponseListPeek, MessageResponseListSeekBackward, MessageResponseListSeekEnd, MessageResponseListSeekForward, MessageResponseListSeekStart, MessageResponseListTell, MessageResponseMake, MessageResponseRemove, MessageResponseState, MessageResponseWalk}, state::State};
-pub fn get_u64(bytes: &[u8]) -> Option<u64> {
-    let array: [u8; size_of::<u64>()] = bytes.get(0..8)?.try_into().ok()?;
+pub fn get_u64(bytes: &[u8], offset: u64) -> Option<u64> {
+    let array: [u8; size_of::<u64>()] = bytes
+        .get(offset as usize..offset as usize + size_of::<u64>())?
+        .try_into()
+        .ok()?;
     Some(u64::from_le_bytes(array))
+}
+pub fn set_u64(bytes: &mut [u8], offset: u64, value: u64) -> Option<()> {
+    Some(
+        bytes
+            .get_mut(offset as usize..offset as usize + size_of::<u64>())?
+            .copy_from_slice(&value.to_le_bytes()),
+    )
+}
+pub fn offset<'a>(bytes: &'a [u8]) -> Option<&'a [u8]> {
+    bytes.get(get_u64(bytes, 0)? as usize + size_of::<u64>()..).into()
+}
+pub fn offset_mut<'a>(bytes: &'a mut [u8]) -> Option<&'a mut [u8]> {
+    bytes.get_mut(get_u64(bytes, 0)? as usize + size_of::<u64>()..).into()
 }
 #[repr(u64)]
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -113,29 +141,29 @@ impl MessageTag {
         }
     }
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        Self::from_u64(u64::deserialise(bytes)?)
+        Self::from_u64(get_u64(bytes, 0)?)
     }
 }
 impl State {
     fn from_bytes(bytes: &[u8]) -> Option<Self> {
         Some(Self {
-            walk: bytes.get(0)? != 0,
-            make: bytes.get(1)? != 0,
-            remove: bytes.get(2)? != 0,
-            rename: bytes.get(3)? != 0,
-            read: bytes.get(4)? != 0,
-            insert: bytes.get(5)? != 0,
-            overwrite_forward: bytes.get(6)? != 0,
-            overwrite_backward: bytes.get(7)? != 0,
-            truncate_forward: bytes.get(8)? != 0,
-            truncate_backward: bytes.get(9)? != 0,
-            seek_forward: bytes.get(10)? != 0,
-            seek_backward: bytes.get(11)? != 0,
-            seek_start: bytes.get(12)? != 0,
-            seek_end: bytes.get(13)? != 0,
-            tell: bytes.get(14)? != 0,
-            bind_before: bytes.get(15)? != 0,
-            bind_after: bytes.get(16)? != 0,
+            walk: *bytes.get(0)? != 0,
+            make: *bytes.get(1)? != 0,
+            remove: *bytes.get(2)? != 0,
+            rename: *bytes.get(3)? != 0,
+            read: *bytes.get(4)? != 0,
+            insert: *bytes.get(5)? != 0,
+            overwrite_forward: *bytes.get(6)? != 0,
+            overwrite_backward: *bytes.get(7)? != 0,
+            truncate_forward: *bytes.get(8)? != 0,
+            truncate_backward: *bytes.get(9)? != 0,
+            seek_forward: *bytes.get(10)? != 0,
+            seek_backward: *bytes.get(11)? != 0,
+            seek_start: *bytes.get(12)? != 0,
+            seek_end: *bytes.get(13)? != 0,
+            tell: *bytes.get(14)? != 0,
+            bind_before: *bytes.get(15)? != 0,
+            bind_after: *bytes.get(16)? != 0,
         })
     }
     fn to_bytes(self: &Self) -> [u8; 17] {
@@ -160,21 +188,43 @@ impl State {
         ]
     }
 }
+impl MessageRequestState {
+    pub fn parse(bytes: Vec<u8>) -> Result<MessageRequestState, Vec<u8>> {
+        let offset = offset(&bytes).ok_or_else(|| bytes)?;
+        Ok(MessageRequestState(bytes))
+    }
+    pub fn get_descriptor(self: &Self) -> Option<u64> {
+        let offset = offset(&bytes)?;
+        None
+    }
+    pub fn set_descriptor(self: &mut Self, descriptor: u64) -> Option<()> {
+        let offset = offset(&bytes)?;
+        None
+    }
+}
+impl MessageResponse {
+    pub fn parse(bytes: Vec<u8>) -> Result<MessageRequest, Vec<u8>> {
+        Err(bytes)
+    }
+}
 pub struct Message();
 impl Message {
     pub fn new(bytes: Vec<u8>) -> Self {
-        Self {}
+        Self()
     }
 }
+pub fn message_collect(bytes: &[&[u8]]) -> Message {
+    Message()
+}
 fn vec_collect(slices: &[&[u8]]) -> Vec<u8> {
-        [0u64.to_le_bytes().as_ref()]
-            .as_ref()
-            .iter()
-            .chain(slices.iter())
-            .map(|section| section.iter())
-            .flatten()
-            .map(|byte| byte.clone())
-            .collect::<Vec<u8>>()
+    [0u64.to_le_bytes().as_ref()]
+        .as_ref()
+        .iter()
+        .chain(slices.iter())
+        .map(|section| section.iter())
+        .flatten()
+        .map(|byte| byte.clone())
+        .collect::<Vec<u8>>()
 }
 pub fn request_state(descriptor: u64) -> Message {
     message_collect(&[
@@ -362,9 +412,7 @@ pub fn request_list_tell(descriptor: u64) -> Message {
 }
 pub fn response_list_tell(offset: u64) -> Message {
     message_collect(&[
-        (MessageTag::ResponseListTell as u64)
-            .to_le_bytes()
-            .as_ref(),
+        (MessageTag::ResponseListTell as u64).to_le_bytes().as_ref(),
         offset.to_le_bytes().as_ref(),
     ])
 }
@@ -451,9 +499,7 @@ pub fn response_insert(length: u64) -> Message {
 }
 pub fn request_overwrite(descriptor: u64, content: &[u8]) -> Message {
     message_collect(&[
-        (MessageTag::RequestOverwrite as u64)
-            .to_le_bytes()
-            .as_ref(),
+        (MessageTag::RequestOverwrite as u64).to_le_bytes().as_ref(),
         descriptor.to_le_bytes().as_ref(),
         content.len().to_le_bytes().as_ref(),
         content,
@@ -476,9 +522,7 @@ pub fn request_truncate(descriptor: u64, length: u64) -> Message {
 }
 pub fn response_truncate(length: u64) -> Message {
     message_collect(&[
-        (MessageTag::ResponseTruncate as u64)
-            .to_le_bytes()
-            .as_ref(),
+        (MessageTag::ResponseTruncate as u64).to_le_bytes().as_ref(),
         length.to_le_bytes().as_ref(),
     ])
 }
@@ -518,9 +562,7 @@ pub fn response_seek_backward(offset: u64) -> Message {
 }
 pub fn request_seek_start(descriptor: u64, offset: u64) -> Message {
     message_collect(&[
-        (MessageTag::RequestSeekStart as u64)
-            .to_le_bytes()
-            .as_ref(),
+        (MessageTag::RequestSeekStart as u64).to_le_bytes().as_ref(),
         descriptor.to_le_bytes().as_ref(),
         offset.to_le_bytes().as_ref(),
     ])
@@ -575,9 +617,7 @@ pub fn request_bind_after(
     mask: &State,
 ) -> Message {
     message_collect(&[
-        (MessageTag::RequestBindAfter as u64)
-            .to_le_bytes()
-            .as_ref(),
+        (MessageTag::RequestBindAfter as u64).to_le_bytes().as_ref(),
         to_descriptor.to_le_bytes().as_ref(),
         from_descriptor.to_le_bytes().as_ref(),
         to_path.len().to_le_bytes().as_ref(),
