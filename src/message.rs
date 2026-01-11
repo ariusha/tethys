@@ -1,5 +1,5 @@
 use alloc::{string::String, vec::Vec};
-use crate::state::State;
+use crate::{exchange::ValidRequest, state::State};
 pub struct MessageRequestState {
     descriptor: u64,
 }
